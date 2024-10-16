@@ -4,6 +4,7 @@ import express from "express";
 import session from "express-session";
 import logger from "morgan";
 import * as path from "path";
+const multer = require("multer");
 
 // The following line sets up the environment variables before everything else.
 dotenv.config();
@@ -37,6 +38,13 @@ app.use(
 app.use(express.static(path.join(__dirname, "../public")));
 app.use("/api/", appRouter);
 
+const upload = multer();
+
+app.post("/upload", upload.single("file"), (req: any, res) => {
+  // Process the uploaded file (req.file)
+  console.log("file::::", req, req.file ?? "");
+  res.send("File uploaded successfully");
+});
 // For all unrecognized requests, return a not found message.
 app.all("*", (req, res) => {
   res.status(404).json({

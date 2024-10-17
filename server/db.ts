@@ -20,6 +20,10 @@ if (process.env.TEST) {
   DB_NAME = "61040-db"; // Feel free to change db name!
 }
 
+if (process.env.DB_NAME) {
+  DB_NAME = process.env.DB_NAME;
+}
+
 /**
  * Attempts to complete the connection to {@link client}.
  */

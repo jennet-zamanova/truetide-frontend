@@ -8,6 +8,7 @@ import {
   Filter,
   FindOneAndUpdateOptions,
   FindOptions,
+  GridFSBucket,
   ObjectId,
   OptionalUnlessRequiredId,
   ReplaceOptions,
@@ -15,6 +16,7 @@ import {
   WithoutId,
 } from "mongodb";
 
+import fs from "fs";
 import db from "../db";
 
 export interface BaseDoc {
@@ -33,11 +35,15 @@ export type WithoutBase<T extends BaseDoc> = Omit<T, keyof BaseDoc>;
 export default class DocCollection<Schema extends BaseDoc> {
   public readonly collection: Collection<Schema>;
   private static collectionNames: Set<string> = new Set();
+  public readonly bucket: GridFSBucket;
 
   constructor(public readonly name: string) {
     if (DocCollection.collectionNames.has(name)) {
       throw new Error(`Collection '${name}' already exists!`);
     }
+    this.bucket = new GridFSBucket(db, {
+      bucketName: name + "videos",
+    });
     this.collection = db.collection(name);
   }
 
@@ -153,4 +159,19 @@ export default class DocCollection<Schema extends BaseDoc> {
   /*
    * You may wish to add more methods, e.g. using other MongoDB operations!
    */
+  async uploadVideo(filePath: string, filename: string): Promise<ObjectId> {
+    const uploadStream = this.bucket.openUploadStream(filename);
+    return new Promise((resolve, reject) => {
+      fs.createReadStream(filePath)
+        .pipe(uploadStream)
+        .on("finish", () => {
+          console.log("Video uploaded successfully with id", uploadStream.id);
+          resolve(uploadStream.id);
+        })
+        .on("error", (error: Error) => {
+          console.error("Error uploading video:", error);
+          reject(error);
+        });
+    });
+  }
 }

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import UploadVideo from "@/components/Post/UploadVideo.vue";
 import { ref } from "vue";
 import { fetchy } from "../../utils/fetchy";
 
@@ -25,7 +26,8 @@ const emptyForm = () => {
 <template>
   <form @submit.prevent="createPost(content)">
     <label for="content">Post Contents:</label>
-    <textarea id="content" v-model="content" placeholder="Create a post!" required> </textarea>
+    <!-- <textarea id="content" v-model="content" placeholder="Create a post!" required> </textarea> -->
+    <UploadVideo />
     <button type="submit" class="pure-button-primary pure-button">Create Post</button>
   </form>
 </template>

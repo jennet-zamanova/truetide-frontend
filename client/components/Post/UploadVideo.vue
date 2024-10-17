@@ -13,7 +13,7 @@ async function uploadFile() {
   const formData = new FormData();
   formData.append("file", file);
   try {
-    const response = await fetch("http://truetide-frontend.vercel.app/api/upload", {
+    const response = await fetch("https://truetide-frontend.vercel.app/api/upload", {
       method: "POST",
       body: formData,
     });

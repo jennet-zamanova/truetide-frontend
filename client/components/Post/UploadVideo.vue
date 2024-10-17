@@ -13,7 +13,7 @@ async function uploadFile() {
   const formData = new FormData();
   formData.append("file", file);
   try {
-    const response = await fetch("http://localhost:3000/upload", {
+    const response = await fetch("http://localhost:3000/api/upload", {
       method: "POST",
       body: formData,
     });
@@ -22,7 +22,7 @@ async function uploadFile() {
     }
     console.log("File uploaded successfully");
   } catch (error) {
-    console.error(error);
+    console.error("Here is the error on upload", error);
   }
 }
 </script>

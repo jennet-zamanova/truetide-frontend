@@ -41,7 +41,7 @@ app.use(express.static(path.join(__dirname, "../public")));
 app.use("/api/", appRouter);
 
 // Specifically upload video
-app.post("/upload", upload.single("file"), async (req: any, res) => {
+app.post("/api/upload", upload.single("file"), async (req: any, res) => {
   // Process the uploaded file (req.file)
   console.log("file::::", req, req.file ?? "");
   const filePath = req.file.path;

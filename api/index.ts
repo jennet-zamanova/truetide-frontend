@@ -3,16 +3,19 @@ import dotenv from "dotenv";
 import express from "express";
 import session from "express-session";
 import logger from "morgan";
+import multer from "multer";
 import * as path from "path";
 
 // The following line sets up the environment variables before everything else.
 dotenv.config();
 
 import MongoStore from "connect-mongo";
+import { Posting } from "../server/app";
 import { connectDb } from "../server/db";
 import { appRouter } from "../server/routes";
 
 export const app = express();
+const upload = multer({ dest: "/tmp" });
 const PORT = process.env.PORT || 3000;
 app.use(logger("dev"));
 
@@ -36,6 +39,16 @@ app.use(
 
 app.use(express.static(path.join(__dirname, "../public")));
 app.use("/api/", appRouter);
+
+// Specifically upload video
+app.post("/upload", upload.single("file"), async (req: any, res) => {
+  // Process the uploaded file (req.file)
+  console.log("file::::", req, req.file ?? "");
+  const filePath = req.file.path;
+  const filename = `${Date.now()}-${req.file.originalname}`;
+  await Posting.posts.uploadVideo(filePath, filename);
+  res.send("File uploaded successfully");
+});
 
 // For all unrecognized requests, return a not found message.
 app.all("*", (req, res) => {

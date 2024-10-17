@@ -15,7 +15,7 @@ import { appRouter } from "../server/routes";
 
 export const app = express();
 const PORT = process.env.PORT || 3000;
-const upload = multer({ dest: "temp/" });
+const upload = multer({ dest: "/tmp" });
 app.use(logger("dev"));
 
 app.use(cors()); // https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS

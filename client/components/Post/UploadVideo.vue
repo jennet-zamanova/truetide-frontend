@@ -20,7 +20,7 @@ async function uploadFile() {
     if (!response.ok) {
       throw new Error("File upload failed");
     }
-    console.log("File uploaded successfully");
+    console.log("File uploaded successfully", await response.text());
   } catch (error) {
     console.error("Here is the error on upload", error);
   }

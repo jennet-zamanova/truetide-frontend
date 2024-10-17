@@ -46,8 +46,8 @@ app.post("/api/upload", upload.single("file"), async (req: any, res) => {
   console.log("file::::", req, req.file ?? "");
   const filePath = req.file.path;
   const filename = `${Date.now()}-${req.file.originalname}`;
-  await Posting.posts.uploadVideo(filePath, filename);
-  res.send("File uploaded successfully");
+  const videoID = await Posting.posts.uploadVideo(filePath, filename);
+  res.send("File uploaded successfully" + videoID);
 });
 
 // For all unrecognized requests, return a not found message.

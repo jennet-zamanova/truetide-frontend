@@ -29,6 +29,9 @@ const createPost = async () => {
 
 const handleFileUpload = async (filePath: string, fileID: string) => {
   fileUploaded.value = true;
+  fileId = "https://youtu.be/JiuBeLDSGR0?si=ofefnZH5WCbjJ9qp"; // will be used
+  links = [];
+  labels = [];
   try {
     if (filePath != "") {
       fileId = fileID;
@@ -40,13 +43,25 @@ const handleFileUpload = async (filePath: string, fileID: string) => {
   }
 };
 
-const handleLinks = (selectedLinks: string[]) => {
+const handleLinksForward = (selectedLinks: string[]) => {
   links = selectedLinks;
   linksAdded.value = true;
 };
 
-const handleLabels = (selectedLabels: string[]) => {
+const handleLinksBackward = (selectedLinks: string[]) => {
+  links = selectedLinks;
+  linksReceived.value = false;
+  fileUploaded.value = false;
+};
+
+const handleLabelsForward = async (selectedLabels: string[]) => {
   labels = selectedLabels;
+  await createPost();
+};
+
+const handleLabelsBackward = async (selectedLabels: string[]) => {
+  labels = selectedLabels;
+  linksAdded.value = false;
 };
 
 const emptyForm = () => {
@@ -64,9 +79,9 @@ const emptyForm = () => {
     <label for="content" v-if="!fileUploaded">Post Contents:</label>
     <!-- <textarea id="content" v-model="content" placeholder="Create a post!" required> </textarea> -->
     <UploadVideo v-if="!fileUploaded" @uploadFile="handleFileUpload"></UploadVideo>
-    <AddData v-if="fileUploaded && linksReceived && !linksAdded" :defaultData="links" name="Citations" @addData="handleLinks"></AddData>
-    <AddData v-if="linksAdded" :defaultData="labels" name="Hashtags" @addData="handleLabels"></AddData>
-    <button v-if="linksAdded" type="submit" class="pure-button-primary pure-button">Create Post</button>
+    <AddData v-if="fileUploaded && linksReceived && !linksAdded" :defaultData="links" name="Citations" @addData="handleLinksForward" @goBack="handleLinksBackward"></AddData>
+    <AddData v-if="linksAdded" :defaultData="labels" name="Hashtags" @addData="handleLabelsForward" @goBack="handleLabelsBackward"></AddData>
+    <!-- <button v-if="linksAdded" type="submit" class="pure-button-primary pure-button">Create Post</button> -->
   </form>
 </template>
 

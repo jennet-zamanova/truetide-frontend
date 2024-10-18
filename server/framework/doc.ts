@@ -12,6 +12,8 @@ import {
   ObjectId,
   OptionalUnlessRequiredId,
   ReplaceOptions,
+  UpdateFilter,
+  UpdateOptions,
   UpdateResult,
   WithoutId,
 } from "mongodb";
@@ -117,6 +119,10 @@ export default class DocCollection<Schema extends BaseDoc> {
     const safe = this.withoutInternal(update);
     safe.dateUpdated = new Date();
     return await this.collection.updateOne(filter, { $set: safe as Partial<Schema> }, options);
+  }
+
+  async updateMany(filter: Filter<Schema>, update: UpdateFilter<Schema>, options?: UpdateOptions): Promise<UpdateResult<Schema>> {
+    return await this.collection.updateMany(filter, update, options);
   }
 
   /**

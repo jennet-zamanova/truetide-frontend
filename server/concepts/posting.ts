@@ -2,6 +2,7 @@ import { ObjectId } from "mongodb";
 
 import DocCollection, { BaseDoc } from "../framework/doc";
 import { NotAllowedError, NotFoundError } from "./errors";
+import { deleteFromGemini, getFileManager, getModelForVideoToText, uploadToGemini } from "./utils";
 
 export interface PostOptions {
   backgroundColor?: string;
@@ -36,20 +37,92 @@ export default class PostingConcept {
     return await this.posts.readMany({}, { sort: { _id: -1 } });
   }
 
+  async getPost(_id: ObjectId) {
+    // Returns specific post!
+    return await this.posts.readOne({ _id });
+  }
+
+  async getPostsSubset(ids: ObjectId[]): Promise<PostDoc[]> {
+    const optionalContentPosts = await Promise.all(
+      ids.map(async (content: ObjectId) => {
+        return await this.getPost(content);
+      }),
+    );
+    const contentPosts = optionalContentPosts.filter((contentPost) => contentPost !== null);
+    return contentPosts;
+  }
+
   async getByAuthor(author: ObjectId) {
     return await this.posts.readMany({ author });
   }
 
   async update(_id: ObjectId, content?: string, options?: PostOptions) {
-    // Note that if content or options is undefined, those fields will *not* be updated
-    // since undefined values for partialUpdateOne are ignored.
     await this.posts.partialUpdateOne({ _id }, { content, options });
     return { msg: "Post successfully updated!" };
   }
 
   async delete(_id: ObjectId) {
+    // const video_id = (await this.posts.readOne({ _id }))?.content; // would be actual video id
     await this.posts.deleteOne({ _id });
     return { msg: "Post deleted successfully!" };
+  }
+
+  /**
+   * Extracts text out of video content posted previously
+   * @param _id video content id
+   * @returns the text that was spoken in the content
+   */
+  async getContentText(_id: ObjectId) {
+    const contentURL = await this.posts.readOne({ _id });
+    if (contentURL === null) {
+      throw new NotFoundError(`Post ${_id} does not exist!`);
+    }
+    const text = this.getFileText(contentURL.content);
+    return text;
+  }
+
+  // TODO: DONT FORGET TO CHANGE
+  /**
+   * Extracts text out of video url
+   * @param file some video file
+   * @returns text spoken in the file
+   */
+  async getFileText(filePath: string): Promise<string> {
+    // TODO: learn how to deal with token limits
+    const model = getModelForVideoToText();
+    const fileManager = getFileManager();
+    const file = await uploadToGemini(fileManager, filePath);
+    const result = await model.generateContent([
+      {
+        fileData: {
+          mimeType: file.mimeType,
+          fileUri: file.uri,
+        },
+      },
+    ]);
+    await deleteFromGemini(fileManager, file);
+    return result.response.text();
+  }
+  /**
+   * Extracts text out of video file
+   * @param file some video file
+   * @returns text spoken in the file
+   */
+  async getFileTextLocally(filePath: string): Promise<string> {
+    // TODO: learn how to deal with token limits
+    const model = getModelForVideoToText();
+    const fileManager = getFileManager();
+    const file = await uploadToGemini(fileManager, filePath);
+    const result = await model.generateContent([
+      {
+        fileData: {
+          mimeType: file.mimeType,
+          fileUri: file.uri,
+        },
+      },
+    ]);
+    await deleteFromGemini(fileManager, file);
+    return result.response.text();
   }
 
   async assertAuthorIsUser(_id: ObjectId, user: ObjectId) {

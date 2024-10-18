@@ -8,26 +8,27 @@ function handleFileUpload() {
   files.value = fileInput.value?.files;
 }
 async function uploadFile() {
-  const file = files.value[0];
-  console.log(file);
-  const formData = new FormData();
-  formData.append("file", file);
-  try {
-    const response = await fetch("https://truetide-frontend.vercel.app/api/upload", {
-      method: "POST",
-      body: formData,
-    });
-    if (!response.ok) {
-      throw new Error("File upload failed");
-    }
-    console.log("File uploaded successfully", await response.text());
-  } catch (error) {
-    console.error("Here is the error on upload", error);
-  }
+  //   const file = files.value[0];
+  //   console.log(file);
+  //   const formData = new FormData();
+  //   formData.append("file", file);
+  //   try {
+  // const response = await fetch("https://truetide-frontend.vercel.app/api/upload", {
+  //   method: "POST",
+  //   body: formData,
+  // });
+  //     if (!response.ok) {
+  //       throw new Error("File upload failed");
+  //     }
+  //     console.log("File uploaded successfully", await response.text());
+  //   } catch (error) {
+  //     console.error("Here is the error on upload", error);
+  //   }
+  emit("uploadFile", "", "");
 }
 </script>
 <template>
-  <input ref="fileInput" type="file" @change="handleFileUpload" />
+  <input ref="fileInput" type="file" @change="handleFileUpload" class="button-secondary" />
   <button type="button" @click="uploadFile" class="pure-button-primary pure-button">Next</button>
 </template>
 <style scoped></style>

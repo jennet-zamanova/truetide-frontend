@@ -1,7 +1,8 @@
 <script setup lang="ts">
+import { useToastStore } from "@/stores/toast";
 import { ref } from "vue";
 
-const emit = defineEmits(["addData"]);
+const emit = defineEmits(["addData", "goBack"]);
 const props = defineProps(["name", "defaultData"]);
 
 const data = ref(props.defaultData);
@@ -14,8 +15,11 @@ const submitData = async (dataPoint: string) => {
 };
 
 const addData = () => {
-  // todo if name is citations check that its a valid link
-  data.value.push(inputData.value);
+  if (props.name === "Citations" && !URL.canParse(inputData.value)) {
+    useToastStore().showToast({ message: "Please submit a valid link!", style: "error" });
+  } else {
+    data.value.push(inputData.value);
+  }
   inputData.value = "";
 };
 
@@ -37,11 +41,15 @@ const emptyForm = () => {
 
       <div class="row-div">
         <textarea id="content" v-model="inputData" :placeholder="`Add a ${props.name.slice(0, -1)}!`"> </textarea>
-        <button type="button" class="button-secondary pure-button" @click="addData">Add</button>
+        <button type="button" class="button-secondary pure-button add-button" @click="addData">Add</button>
       </div>
     </div>
 
-    <button v-if="props.name !== 'Hashtags'" type="submit" class="pure-button-primary pure-button">Next</button>
+    <div class="full-row-div row-div">
+      <button type="button" class="pure-button-primary pure-button" @click="emit('goBack', data)">Back</button>
+      <button v-if="props.name !== 'Hashtags'" type="submit" class="pure-button-primary pure-button">Next</button>
+      <button v-else type="submit" class="pure-button-primary pure-button">Create Post!</button>
+    </div>
   </form>
 </template>
 
@@ -51,10 +59,21 @@ label {
   font-weight: bold;
   padding: 0.25em 0;
 }
+
+textarea {
+  flex: 1;
+}
+
+.add-button {
+  flex: 0;
+}
 .row-div {
   display: flex;
   flex-direction: row;
   gap: 0.5em;
+}
+.full-row-div {
+  justify-content: space-between;
 }
 .add-form {
   padding: 0;

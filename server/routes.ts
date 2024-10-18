@@ -97,7 +97,7 @@ class Routes {
   async createPost(session: SessionDoc, content: string, citations: string, labels: string, options?: PostOptions) {
     const links = citations.split(", ");
     if (links.map((link) => URL.canParse(link)).filter((isLink) => !isLink).length !== 0) {
-      throw new NotAllowedError(`expected comma-separated links but got ${citations}`);
+      throw new NotAllowedError(`expected comma-separated VALID links but got ${citations}`);
     }
     if (!URL.canParse(content)) {
       throw new NotAllowedError("Expected a link to a video but got ", content);

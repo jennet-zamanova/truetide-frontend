@@ -81,7 +81,12 @@ class Routes {
     } else {
       posts = await Posting.getPosts();
     }
-    return Responses.posts(posts);
+    const response_posts = await Responses.posts(posts);
+    return await Promise.all(
+      response_posts.map(async (responsePost) => {
+        return { ...responsePost, citations: (await Citing.getCitations(responsePost._id)).citations, labels: await Labeling.getLabelsForItem(responsePost._id) };
+      }),
+    );
   }
 
   /**
@@ -96,7 +101,7 @@ class Routes {
   @Router.post("/posts")
   async createPost(session: SessionDoc, content: string, citations: string, labels: string, options?: PostOptions) {
     const links = citations.split(", ");
-    if (links.map((link) => URL.canParse(link)).filter((isLink) => !isLink).length !== 0) {
+    if (links.map((link) => URL.canParse(link)).filter((isLink) => !isLink).length !== 0 && citations.length !== 0) {
       throw new NotAllowedError(`expected comma-separated VALID links but got ${citations}`);
     }
     if (!URL.canParse(content)) {
@@ -213,6 +218,11 @@ class Routes {
   @Router.get("/posts/labels/:label")
   async getItems(label: string) {
     return await Labeling.getItemsWithLabel(label);
+  }
+
+  @Router.get("/posts/:postId/labels")
+  async getLabels(postId: string) {
+    return await Labeling.getLabelsForItem(new ObjectId(postId));
   }
 
   // get opposing posts on a topic

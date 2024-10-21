@@ -2,8 +2,8 @@
 import { useToastStore } from "@/stores/toast";
 import { ref } from "vue";
 
-const emit = defineEmits(["addData", "goBack"]);
-const props = defineProps(["name", "defaultData"]);
+const emit = defineEmits(["addData", "goBack", "cancel"]);
+const props = defineProps(["name", "next", "defaultData"]);
 
 const data = ref(props.defaultData);
 
@@ -15,12 +15,22 @@ const submitData = async (dataPoint: string) => {
 };
 
 const addData = () => {
-  if (props.name === "Citations" && !URL.canParse(inputData.value)) {
-    useToastStore().showToast({ message: "Please submit a valid link!", style: "error" });
+  if (inputData.value === "") {
+    useToastStore().showToast({ message: `Please add a nonempty ${props.name.toLowerCase().slice(0, -1)}`, style: "error" });
   } else {
-    data.value.push(inputData.value);
+    if (props.name === "Citations" && !URL.canParse(inputData.value)) {
+      useToastStore().showToast({ message: "Please submit a valid link!", style: "error" });
+    } else {
+      data.value.push(inputData.value);
+    }
   }
+
   inputData.value = "";
+};
+
+const cancel = () => {
+  emit("cancel");
+  emptyForm();
 };
 
 const emptyForm = () => {
@@ -30,7 +40,10 @@ const emptyForm = () => {
 
 <template>
   <form class="add-form" @submit.prevent="submitData(data)">
-    <label for="content">Add {{ props.name }}:</label>
+    <div class="full-row-div row-div">
+      <label for="content">Add {{ props.name }}:</label>
+      <button type="button" class="button-secondary pure-button add-button" @click="cancel">Cancel</button>
+    </div>
     <div>
       <div>
         <div class="row-div" v-for="(dataPoint, index) of data" :key="index">
@@ -47,8 +60,7 @@ const emptyForm = () => {
 
     <div class="full-row-div row-div">
       <button type="button" class="pure-button-primary pure-button" @click="emit('goBack', data)">Back</button>
-      <button v-if="props.name !== 'Hashtags'" type="submit" class="pure-button-primary pure-button">Next</button>
-      <button v-else type="submit" class="pure-button-primary pure-button">Create Post!</button>
+      <button type="submit" class="pure-button-primary pure-button">{{ props.next ?? "Next" }}</button>
     </div>
   </form>
 </template>

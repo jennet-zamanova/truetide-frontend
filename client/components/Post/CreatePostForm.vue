@@ -11,11 +11,13 @@ const emit = defineEmits(["refreshPosts"]);
 const fileUploaded = ref(false);
 const linksReceived = ref(false);
 const linksAdded = ref(false);
+const labelsAdded = ref(false);
 
 let fileId: string = "https://youtu.be/JiuBeLDSGR0?si=ofefnZH5WCbjJ9qp"; // will be used
 let links: string[] = [];
 let labels: string[] = [];
 const createPost = async () => {
+  labelsAdded.value = true;
   try {
     await fetchy("/api/posts", "POST", {
       body: { citations: links.join(", "), labels: labels.join(", "), content: fileId },
@@ -71,18 +73,26 @@ const emptyForm = () => {
   fileId = "https://youtu.be/JiuBeLDSGR0?si=ofefnZH5WCbjJ9qp";
   links = [];
   labels = [];
+  labelsAdded.value = false;
 };
 </script>
 
 <template>
-  <form @submit.prevent="createPost()">
+  <form @submit.prevent="createPost()" v-if="!labelsAdded">
     <label for="content" v-if="!fileUploaded">Post Contents:</label>
-    <!-- <textarea id="content" v-model="content" placeholder="Create a post!" required> </textarea> -->
     <UploadVideo v-if="!fileUploaded" @uploadFile="handleFileUpload"></UploadVideo>
-    <AddData v-if="fileUploaded && linksReceived && !linksAdded" :defaultData="links" name="Citations" @addData="handleLinksForward" @goBack="handleLinksBackward"></AddData>
-    <AddData v-if="linksAdded" :defaultData="labels" name="Hashtags" @addData="handleLabelsForward" @goBack="handleLabelsBackward"></AddData>
-    <!-- <button v-if="linksAdded" type="submit" class="pure-button-primary pure-button">Create Post</button> -->
+    <AddData
+      v-if="fileUploaded && linksReceived && !linksAdded"
+      :defaultData="links"
+      name="Citations"
+      next="Next"
+      @addData="handleLinksForward"
+      @goBack="handleLinksBackward"
+      @cancel="emptyForm"
+    ></AddData>
+    <AddData v-if="linksAdded && !labelsAdded" :defaultData="labels" name="Hashtags" next="Create Post!" @addData="handleLabelsForward" @goBack="handleLabelsBackward" @cancel="emptyForm"></AddData>
   </form>
+  <div class="loading" v-else>Uploading the Post...</div>
 </template>
 
 <style scoped>
@@ -107,5 +117,11 @@ label {
   font-size: large;
   font-weight: bold;
   padding: 0.25em;
+}
+.loading {
+  padding: 2em;
+  text-align: center;
+  background-color: var(--base-bg);
+  border-radius: 1em;
 }
 </style>

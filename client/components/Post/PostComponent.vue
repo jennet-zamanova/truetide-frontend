@@ -2,11 +2,23 @@
 import { useUserStore } from "@/stores/user";
 import { formatDate } from "@/utils/formatDate";
 import { storeToRefs } from "pinia";
+import { computed } from "vue";
 import { fetchy } from "../../utils/fetchy";
+import PostCitations from "./Citation/PostCitations.vue";
+import PostLabels from "./Label/PostLabels.vue";
 
 const props = defineProps(["post"]);
 const emit = defineEmits(["editPost", "refreshPosts"]);
 const { currentUsername } = storeToRefs(useUserStore());
+
+const postURL = computed(() => {
+  // const root = "https://youtu.be/";
+  // return props.post.content.slice(0, root.length) + "embed/" + props.post.content.slice(root.length)
+  if (props.post.content.includes("embed")) {
+    return props.post.content;
+  }
+  return "https://www.youtube.com/embed/8Eu3jmEUlzc?si=kYFDGrGTQENvkHWe";
+});
 
 const deletePost = async () => {
   try {
@@ -19,8 +31,24 @@ const deletePost = async () => {
 </script>
 
 <template>
-  <p class="author">{{ props.post.author }}</p>
-  <p>{{ props.post.content }}</p>
+  <iframe
+    width="560"
+    height="315"
+    :src="postURL"
+    title="YouTube video player"
+    frameborder="0"
+    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+    referrerpolicy="strict-origin-when-cross-origin"
+    allowfullscreen
+  ></iframe>
+  <!-- <p>{{ props.post.content }}</p> -->
+  <div class="post-info">
+    <button class="author">{{ props.post.author.slice(0, 1) }}</button>
+    <div class="meta">
+      <PostLabels :labels="props.post.labels"></PostLabels>
+      <PostCitations :links="props.post.citations"></PostCitations>
+    </div>
+  </div>
   <div class="base">
     <menu v-if="props.post.author == currentUsername">
       <li><button class="btn-small pure-button" @click="emit('editPost', props.post._id)">Edit</button></li>
@@ -37,10 +65,27 @@ const deletePost = async () => {
 p {
   margin: 0em;
 }
-
+.post-info {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  height: 10%;
+  margin: 1em 0em;
+}
 .author {
+  margin-right: 1em;
+  text-align: center;
+  padding-left: 3%;
+  padding-right: 3%;
+  border-radius: 50%;
   font-weight: bold;
   font-size: 1.2em;
+  background-color: black;
+  color: white;
+}
+.meta {
+  display: flex;
+  flex-direction: column;
 }
 
 menu {

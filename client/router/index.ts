@@ -4,8 +4,10 @@ import { createRouter, createWebHistory } from "vue-router";
 import { useUserStore } from "@/stores/user";
 import HomeView from "../views/HomeView.vue";
 import LoginView from "../views/LoginView.vue";
+import MyPostsView from "../views/MyPostsView.vue";
 import NotFoundView from "../views/NotFoundView.vue";
 import SettingView from "../views/SettingView.vue";
+import UploadView from "../views/UploadView.vue";
 
 const router = createRouter({
   history: createWebHistory(),
@@ -30,6 +32,30 @@ const router = createRouter({
         const { isLoggedIn } = storeToRefs(useUserStore());
         if (isLoggedIn.value) {
           return { name: "Settings" };
+        }
+      },
+    },
+    {
+      path: "/upload",
+      name: "Upload",
+      component: UploadView,
+      meta: { requiresAuth: true },
+      beforeEnter: (to, from) => {
+        const { isLoggedIn } = storeToRefs(useUserStore());
+        if (!isLoggedIn.value) {
+          return { name: "Login" };
+        }
+      },
+    },
+    {
+      path: "/myPosts",
+      name: "MyPosts",
+      component: MyPostsView,
+      meta: { requiresAuth: true },
+      beforeEnter: (to, from) => {
+        const { isLoggedIn } = storeToRefs(useUserStore());
+        if (!isLoggedIn.value) {
+          return { name: "Login" };
         }
       },
     },

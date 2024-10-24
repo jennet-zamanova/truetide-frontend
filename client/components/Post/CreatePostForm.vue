@@ -31,7 +31,10 @@ const createPost = async () => {
 
 const handleFileUpload = async (filePath: string, fileID: string) => {
   fileUploaded.value = true;
-  fileId = "https://youtu.be/JiuBeLDSGR0?si=ofefnZH5WCbjJ9qp"; // will be used
+  if (fileID.length !== 0) {
+    fileId = fileID;
+  }
+  // fileId = fileID ?? "https://youtu.be/JiuBeLDSGR0?si=ofefnZH5WCbjJ9qp"; // will be used
   links = [];
   labels = [];
   try {
@@ -80,7 +83,9 @@ const emptyForm = () => {
 <template>
   <form @submit.prevent="createPost()" v-if="!labelsAdded">
     <label for="content" v-if="!fileUploaded">Post Contents:</label>
-    <UploadVideo v-if="!fileUploaded" @uploadFile="handleFileUpload"></UploadVideo>
+    <div>
+      <UploadVideo v-if="!fileUploaded" @uploadFile="handleFileUpload"></UploadVideo>
+    </div>
     <AddData
       v-if="fileUploaded && linksReceived && !linksAdded"
       :defaultData="links"
@@ -97,6 +102,7 @@ const emptyForm = () => {
 
 <style scoped>
 form {
+  height: 100%;
   background-color: var(--base-bg);
   border-radius: 1em;
   display: flex;

@@ -1,4 +1,5 @@
-import { Authing } from "./app";
+import { ObjectId } from "mongodb";
+import { Authing, Citing, Labeling, Posting } from "./app";
 import { AlreadyFriendsError, FriendNotFoundError, FriendRequestAlreadyExistsError, FriendRequestDoc, FriendRequestNotFoundError } from "./concepts/friending";
 import { PostAuthorNotMatchError, PostDoc } from "./concepts/posting";
 import { Router } from "./framework/router";
@@ -36,6 +37,32 @@ export default class Responses {
     const to = requests.map((request) => request.to);
     const usernames = await Authing.idsToUsernames(from.concat(to));
     return requests.map((request, i) => ({ ...request, from: usernames[i], to: usernames[i + requests.length] }));
+  }
+
+  /**
+   * Convert the postId pairs into more readable format for the frontend
+   * by converting ids into usernames and retrieving labels ad citations
+   * @param postPairs pairs of postId
+   * @returns post pairs with usernames, lables, and links
+   */
+  static async pairedPosts(postPairs: ObjectId[][]) {
+    const allPosts = [];
+    for (const postPair of postPairs) {
+      const contents = await Posting.getPostsSubset(postPair);
+      console.log("here are the contents: ", contents);
+      const labels = await Promise.all(postPair.map((post) => Labeling.getLabelsForItem(post)));
+      const links = await Promise.all(postPair.map((post) => Citing.getCitations(post)));
+
+      console.log("here are the labels: ", labels);
+      const post_info = await Promise.all(
+        contents.map(async (content, index) => {
+          const post = await this.post(content);
+          return { ...post, labels: labels[index], citations: links[index]["citations"] };
+        }),
+      );
+      allPosts.push(post_info);
+    }
+    return allPosts;
   }
 }
 

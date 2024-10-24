@@ -10,6 +10,22 @@ import Responses from "./responses";
 
 import { z } from "zod";
 
+type PairedPost = {
+  labels: string[];
+  citations: string[];
+  author?: string | undefined;
+  content?: string | undefined;
+  options?: PostOptions;
+  _id?: ObjectId | undefined;
+  dateCreated?: Date | undefined;
+  dateUpdated?: Date | undefined;
+};
+
+type PairedPostsResponse = {
+  msg: string;
+  posts: PairedPost[][];
+};
+
 /**
  * Web server routes for the app. Implements synchronizations between concepts.
  */
@@ -227,26 +243,68 @@ class Routes {
 
   // get opposing posts on a topic
   @Router.get("/posts/:category")
-  async getPairedPostsOnTopic(category: string) {
-    if (!(await Labeling.getAllCategories()).includes(category)) {
-      return { msg: `the are no posts in category ${category} yet` };
+  async getPairedPostsOnTopic(category: string): Promise<PairedPostsResponse> {
+    const getAllPairedPosts = async function (): Promise<PairedPostsResponse> {
+      let allPosts: PairedPost[][] = [];
+      const allLabels = await Labeling.getAllCategories();
+      console.log("all labels", allLabels);
+      for (const givenCategory of allLabels) {
+        const somePosts = await getSomePairedPostsOnTopic(givenCategory);
+        console.log("some posts: ", somePosts["posts"]);
+        allPosts = allPosts.concat(somePosts["posts"]);
+      }
+      console.log("all posts, ", allPosts);
+      return { msg: `Successfully retrieved All posts`, posts: allPosts };
+    };
+
+    const getSomePairedPostsOnTopic = async function (category: string): Promise<PairedPostsResponse> {
+      if (!(await Labeling.getAllCategories()).includes(category)) {
+        return { msg: `the are no posts in category ${category} yet`, posts: [] };
+      }
+      // const allPosts = [];
+      const postPairs = await Labeling.getOpposingItems(category);
+      console.log("here are the pairs", postPairs);
+      const allPosts = await Responses.pairedPosts(postPairs);
+      console.log("returned posts: ", allPosts);
+      return { msg: `Successfully retrieved posts in category ${category}`, posts: allPosts };
+    };
+    if (category.toLowerCase() === "all") {
+      return getAllPairedPosts();
     }
-    const allPosts = [];
-    const postPairs = await Labeling.getOpposingItems(category);
-    console.log("here are the pairs", postPairs);
-    for (const postPair of postPairs) {
-      const contents = await Posting.getPostsSubset(postPair);
-      console.log("here are the contents: ", contents);
-      const labels = await Promise.all(postPair.map((post) => Labeling.getLabelsForItem(post)));
-      console.log("here are the labels: ", labels);
-      const post_info = contents.map((content, index) => {
-        return { content: content, labels: labels[index] };
-      });
-      allPosts.push(post_info);
-      console.log("here are the posts: ", allPosts);
-    }
-    return allPosts;
+    console.log("paired was called");
+    // if (!(await Labeling.getAllCategories()).includes(category)) {
+    //   return { msg: `the are no posts in category ${category} yet`, posts: [] };
+    // }
+    // // const allPosts = [];
+    // const postPairs = await Labeling.getOpposingItems(category);
+    // console.log("here are the pairs", postPairs);
+    // const allPosts = await Responses.pairedPosts(postPairs);
+
+    // for (const postPair of postPairs) {
+    //   const contents = await Posting.getPostsSubset(postPair);
+    //   console.log("here are the contents: ", contents);
+    //   const labels = await Promise.all(postPair.map((post) => Labeling.getLabelsForItem(post)));
+    //   const links = await Promise.all(postPair.map((post) => Citing.getCitations(post)));
+
+    //   console.log("here are the labels: ", labels);
+    //   const post_info = await Promise.all(
+    //     contents.map(async (content, index) => {
+    //       const post = await Responses.post(content);
+    //       return { ...post, labels: labels[index], citations: links[index]["citations"] };
+    //     }),
+    //   );
+    //   allPosts.push(post_info);
+    // }
+    return getSomePairedPostsOnTopic(category);
   }
+
+  // private async getAllPairedPosts(): Promise<PairedPostsResponse> {
+  //   const allPosts: PairedPost[][] = [];
+  //   for (const category of await Labeling.getAllCategories()) {
+  //     allPosts.concat((await this.getPairedPostsOnTopic(category))["posts"]);
+  //   }
+  //   return { msg: `Successfully retrieved All posts`, posts: allPosts };
+  // }
 
   @Router.get("/friends")
   async getFriends(session: SessionDoc) {

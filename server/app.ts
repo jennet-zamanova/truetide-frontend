@@ -8,7 +8,7 @@ import SessioningConcept from "./concepts/sessioning";
 // The app is a composition of concepts instantiated here
 // and synchronized together in `routes.ts`.
 
-const TrueTideCategories = [
+export const TrueTideCategories = [
   "Politics & Governance",
   "Race & Identity",
   "Free Speech & Censorship",

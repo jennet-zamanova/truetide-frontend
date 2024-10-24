@@ -14,6 +14,7 @@ const { currentUsername } = storeToRefs(useUserStore());
 const postURL = computed(() => {
   // const root = "https://youtu.be/";
   // return props.post.content.slice(0, root.length) + "embed/" + props.post.content.slice(root.length)
+  console.log("props ", props.post);
   if (props.post.content.includes("embed")) {
     return props.post.content;
   }
@@ -32,7 +33,7 @@ const deletePost = async () => {
 
 <template>
   <iframe
-    width="560"
+    width="100%"
     height="315"
     :src="postURL"
     title="YouTube video player"
@@ -41,7 +42,6 @@ const deletePost = async () => {
     referrerpolicy="strict-origin-when-cross-origin"
     allowfullscreen
   ></iframe>
-  <!-- <p>{{ props.post.content }}</p> -->
   <div class="post-info">
     <button class="author">{{ props.post.author.slice(0, 1) }}</button>
     <div class="meta">

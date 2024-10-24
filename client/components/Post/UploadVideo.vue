@@ -24,11 +24,15 @@ async function uploadFile() {
   //   } catch (error) {
   //     console.error("Here is the error on upload", error);
   //   }
-  emit("uploadFile", "", "");
+  emit("uploadFile", "", content.value);
 }
 </script>
 <template>
-  <input ref="fileInput" type="file" @change="handleFileUpload" class="button-secondary" />
-  <button type="button" @click="uploadFile" class="pure-button-primary pure-button">Next</button>
+  <div>
+    <input ref="fileInput" type="file" @change="handleFileUpload" class="button-secondary" />
+    <p>or give URL</p>
+    <input v-model="content" @change="handleFileUpload" class="button-secondary" />
+    <button type="button" @click="uploadFile" class="pure-button-primary pure-button">Next</button>
+  </div>
 </template>
 <style scoped></style>

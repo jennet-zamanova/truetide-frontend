@@ -9,6 +9,7 @@ const currentRoute = useRoute();
 const currentRouteName = computed(() => currentRoute.name);
 const userStore = useUserStore();
 const { isLoggedIn } = storeToRefs(userStore);
+const { currentUsername } = storeToRefs(userStore);
 const { toast } = storeToRefs(useToastStore());
 
 // Make sure to update the session before mounting the app in case the user is already logged in
@@ -27,16 +28,24 @@ onBeforeMount(async () => {
       <div class="title">
         <img src="@/assets/images/logo.svg" />
         <RouterLink :to="{ name: 'Home' }">
-          <h1>Social Media App</h1>
+          <h1>TrueTide</h1>
         </RouterLink>
       </div>
       <ul>
-        <li>
+        <!-- <li>
           <RouterLink :to="{ name: 'Home' }" :class="{ underline: currentRouteName == 'Home' }"> Home </RouterLink>
-        </li>
-        <li v-if="isLoggedIn">
-          <RouterLink :to="{ name: 'Settings' }" :class="{ underline: currentRouteName == 'Settings' }"> Settings </RouterLink>
-        </li>
+        </li> -->
+        <div v-if="isLoggedIn" class="loggedIn">
+          <li>
+            <RouterLink :to="{ name: 'Upload' }" :class="{ underline: currentRouteName == 'Upload' }">Upload</RouterLink>
+          </li>
+          <li>
+            <RouterLink :to="{ name: 'MyPosts' }" :class="{ underline: currentRouteName == 'MyPosts' }">My Posts</RouterLink>
+          </li>
+          <li>
+            <RouterLink :to="{ name: 'Settings' }" :class="{ profileSelected: currentRouteName == 'Settings', profile: true }"> {{ currentUsername.slice(0, 1) }} </RouterLink>
+          </li>
+        </div>
         <li v-else>
           <RouterLink :to="{ name: 'Login' }" :class="{ underline: currentRouteName == 'Login' }"> Login </RouterLink>
         </li>
@@ -53,6 +62,7 @@ onBeforeMount(async () => {
 @import "./assets/toast.css";
 
 nav {
+  height: 8vh;
   padding: 1em 2em;
   background-color: lightgray;
   display: flex;
@@ -91,5 +101,23 @@ ul {
 
 .underline {
   text-decoration: underline;
+}
+
+.loggedIn {
+  display: flex;
+  align-items: center;
+  flex-direction: row;
+  gap: 1em;
+}
+
+.profile {
+  padding: 0.5em 1em;
+  background-color: black;
+  color: white;
+  border-radius: 50%;
+}
+
+.profileSelected {
+  background-color: var(--primary-blue);
 }
 </style>

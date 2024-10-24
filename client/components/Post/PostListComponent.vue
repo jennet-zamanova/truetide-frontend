@@ -80,7 +80,8 @@ section,
 p,
 .row {
   margin: 0 auto;
-  max-width: 60em;
+  max-width: 75em;
+  justify-content: space-between;
 }
 
 article {
@@ -97,12 +98,5 @@ article {
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
-}
-
-.row {
-  display: flex;
-  justify-content: space-between;
-  margin: 0 auto;
-  max-width: 60em;
 }
 </style>

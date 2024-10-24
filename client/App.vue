@@ -26,7 +26,7 @@ onBeforeMount(async () => {
   <header>
     <nav>
       <div class="title">
-        <img src="@/assets/images/logo.svg" />
+        <img src="@/assets/images/anotherLogo.png" />
         <RouterLink :to="{ name: 'Home' }">
           <h1>TrueTide</h1>
         </RouterLink>
@@ -62,9 +62,9 @@ onBeforeMount(async () => {
 @import "./assets/toast.css";
 
 nav {
-  height: 8vh;
+  height: 6vh;
   padding: 1em 2em;
-  background-color: lightgray;
+  background-color: var(--secondary-backgorund);
   display: flex;
   align-items: center;
 }
@@ -86,7 +86,7 @@ img {
 
 a {
   font-size: large;
-  color: black;
+  color: white;
   text-decoration: none;
 }
 
@@ -112,12 +112,13 @@ ul {
 
 .profile {
   padding: 0.5em 1em;
-  background-color: black;
-  color: white;
+  background-color: white;
+  color: black;
   border-radius: 50%;
 }
 
 .profileSelected {
   background-color: var(--primary-blue);
+  color: white;
 }
 </style>

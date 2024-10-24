@@ -41,14 +41,14 @@ const emptyForm = () => {
 <template>
   <form class="add-form" @submit.prevent="submitData(data)">
     <div class="full-row-div row-div">
-      <label for="content">Add {{ props.name }}:</label>
-      <button type="button" class="button-secondary pure-button add-button" @click="cancel">Cancel</button>
+      <h3 for="content">Add {{ props.name }}</h3>
+      <button type="button" class="button-secondary pure-button cancel-button" @click="cancel">Cancel</button>
     </div>
-    <div>
-      <div>
+    <div class="input-div">
+      <div class="data-div">
         <div class="row-div" v-for="(dataPoint, index) of data" :key="index">
-          <label> {{ dataPoint }}</label>
-          <button type="button" class="circle-button" @click="data.splice(index, 1)">-</button>
+          <label class="data-label"> {{ dataPoint }}</label>
+          <button type="button" class="circle-button pure-button" @click="data.splice(index, 1)">-</button>
         </div>
       </div>
 
@@ -59,8 +59,8 @@ const emptyForm = () => {
     </div>
 
     <div class="full-row-div row-div">
-      <button type="button" class="pure-button-primary pure-button" @click="emit('goBack', data)">Back</button>
-      <button type="submit" class="pure-button-primary pure-button">{{ props.next ?? "Next" }}</button>
+      <button type="button" class="pure-button-primary pure-button move-button" @click="emit('goBack', data)">Back</button>
+      <button type="submit" class="pure-button-primary pure-button move-button">{{ props.next ?? "Next" }}</button>
     </div>
   </form>
 </template>
@@ -72,12 +72,33 @@ label {
   padding: 0.25em 0;
 }
 
+.data-label {
+  max-width: 95%;
+  overflow-wrap: break-word;
+}
+
 textarea {
   flex: 1;
 }
 
-.add-button {
+.data-div {
+  flex: 1;
+}
+
+.add-button,
+.cancel-button {
   flex: 0;
+}
+
+.add-button {
+  background-color: var(--secondary-highlight);
+  color: white;
+  font-weight: bold;
+}
+
+.cancel-button,
+.circle-button {
+  background-color: var(--base-bg);
 }
 .row-div {
   display: flex;
@@ -93,5 +114,15 @@ textarea {
 
 div {
   padding: 0.1em;
+}
+
+.input-div {
+  margin: 0 1em;
+  flex: 1;
+}
+
+.move-button {
+  font-weight: bold;
+  background-color: var(--primary-blue);
 }
 </style>

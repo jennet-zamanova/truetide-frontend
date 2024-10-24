@@ -48,16 +48,16 @@ onBeforeMount(async () => {
 </script>
 
 <template>
-  <div class="row">
+  <div class="button-row row">
     <select v-model="searchCategory">
       <option value="all">All</option>
       <option v-for="(category, index) of TrueTideAvailableCategories" :key="index">{{ category }}</option>
       <option v-for="(category, index) of TrueTideCategories" :key="index" disabled>{{ category }}</option>
     </select>
-    <button @click="getPairedPosts">Show Posts</button>
+    <button @click="getPairedPosts" class="pure-button-primary pure-button">Show Posts</button>
   </div>
   <section class="posts" v-if="loaded && posts.length !== 0">
-    <article v-for="(post, index) of posts" :key="index" :style="[index % 2 == 0 ? { 'background-color': 'blue' } : { 'background-color': 'red' }]">
+    <article v-for="(post, index) of posts" :key="index" :style="[index % 2 == 0 ? { 'background-color': 'var(--background)' } : { 'background-color': 'var(--base-bg)' }]">
       <PairedPostComponent :postPair="post" @refreshPosts="getPairedPosts" @editPost="updateEditing"></PairedPostComponent>
       <!--
       <PostComponent v-if="editing !== post._id" :post="post" @refreshPosts="getPosts" @editPost="updateEditing" />
@@ -69,20 +69,25 @@ onBeforeMount(async () => {
 </template>
 
 <style scoped>
+.button-row {
+  margin: 0 10%;
+}
 section {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: 1em;
 }
 
 section,
-p,
-.row {
+p {
   margin: 0 auto;
-  max-width: 60em;
+  max-width: 75em;
+  display: flex;
+  justify-content: space-between;
 }
 
 article {
+  width: 100%;
   background-color: var(--base-bg);
   border-radius: 1em;
   display: flex;
@@ -96,12 +101,5 @@ article {
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
-}
-
-.row {
-  display: flex;
-  justify-content: space-between;
-  margin: 0 auto;
-  max-width: 60em;
 }
 </style>

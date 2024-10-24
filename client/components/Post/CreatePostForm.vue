@@ -82,7 +82,7 @@ const emptyForm = () => {
 
 <template>
   <form @submit.prevent="createPost()" v-if="!labelsAdded">
-    <label for="content" v-if="!fileUploaded">Post Contents:</label>
+    <!-- <h3 for="content" v-if="!fileUploaded">Post Contents:</h3> -->
     <div>
       <UploadVideo v-if="!fileUploaded" @uploadFile="handleFileUpload"></UploadVideo>
     </div>
@@ -103,7 +103,7 @@ const emptyForm = () => {
 <style scoped>
 form {
   height: 100%;
-  background-color: var(--base-bg);
+  /* background-color: var(--base-bg); */
   border-radius: 1em;
   display: flex;
   flex-direction: column;

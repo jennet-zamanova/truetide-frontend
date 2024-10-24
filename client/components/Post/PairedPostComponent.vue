@@ -10,9 +10,12 @@ const emit = defineEmits(["editPost", "refreshPosts"]);
 
 <template>
   <div class="row">
-    <div v-for="(post, index) of props.postPair" :key="index">
-      <PostComponent v-if="editing !== post._id" :post="post" @refreshPosts="() => emit('refreshPosts')" @editPost="() => emit('editPost')"></PostComponent>
-      <EditPostForm v-else :post="post" @refreshPosts="() => emit('refreshPosts')" @editPost="() => emit('editPost')" />
+    <div v-for="(post, index) of props.postPair" :key="index" class="row">
+      <div class="post">
+        <PostComponent v-if="editing !== post._id" :post="post" @refreshPosts="() => emit('refreshPosts')" @editPost="() => emit('editPost')"></PostComponent>
+        <EditPostForm v-else :post="post" @refreshPosts="() => emit('refreshPosts')" @editPost="() => emit('editPost')" />
+      </div>
+
       <p v-if="index !== props.postPair.length - 1">vs</p>
     </div>
   </div>
@@ -20,8 +23,9 @@ const emit = defineEmits(["editPost", "refreshPosts"]);
 
 <style scoped>
 .row {
-  display: flex;
-  flex-direction: row;
-  gap: 2em;
+  justify-content: space-between;
+}
+.post {
+  width: 100%;
 }
 </style>

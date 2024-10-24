@@ -246,14 +246,11 @@ class Routes {
   async getPairedPostsOnTopic(category: string): Promise<PairedPostsResponse> {
     const getAllPairedPosts = async function (): Promise<PairedPostsResponse> {
       let allPosts: PairedPost[][] = [];
-      const allLabels = await Labeling.getAllCategories();
-      console.log("all labels", allLabels);
-      for (const givenCategory of allLabels) {
+      const allCategories = await Labeling.getAllCategories();
+      for (const givenCategory of allCategories) {
         const somePosts = await getSomePairedPostsOnTopic(givenCategory);
-        console.log("some posts: ", somePosts["posts"]);
         allPosts = allPosts.concat(somePosts["posts"]);
       }
-      console.log("all posts, ", allPosts);
       return { msg: `Successfully retrieved All posts`, posts: allPosts };
     };
 
@@ -261,7 +258,6 @@ class Routes {
       if (!(await Labeling.getAllCategories()).includes(category)) {
         return { msg: `the are no posts in category ${category} yet`, posts: [] };
       }
-      // const allPosts = [];
       const postPairs = await Labeling.getOpposingItems(category);
       console.log("here are the pairs", postPairs);
       const allPosts = await Responses.pairedPosts(postPairs);
@@ -272,39 +268,8 @@ class Routes {
       return getAllPairedPosts();
     }
     console.log("paired was called");
-    // if (!(await Labeling.getAllCategories()).includes(category)) {
-    //   return { msg: `the are no posts in category ${category} yet`, posts: [] };
-    // }
-    // // const allPosts = [];
-    // const postPairs = await Labeling.getOpposingItems(category);
-    // console.log("here are the pairs", postPairs);
-    // const allPosts = await Responses.pairedPosts(postPairs);
-
-    // for (const postPair of postPairs) {
-    //   const contents = await Posting.getPostsSubset(postPair);
-    //   console.log("here are the contents: ", contents);
-    //   const labels = await Promise.all(postPair.map((post) => Labeling.getLabelsForItem(post)));
-    //   const links = await Promise.all(postPair.map((post) => Citing.getCitations(post)));
-
-    //   console.log("here are the labels: ", labels);
-    //   const post_info = await Promise.all(
-    //     contents.map(async (content, index) => {
-    //       const post = await Responses.post(content);
-    //       return { ...post, labels: labels[index], citations: links[index]["citations"] };
-    //     }),
-    //   );
-    //   allPosts.push(post_info);
-    // }
     return getSomePairedPostsOnTopic(category);
   }
-
-  // private async getAllPairedPosts(): Promise<PairedPostsResponse> {
-  //   const allPosts: PairedPost[][] = [];
-  //   for (const category of await Labeling.getAllCategories()) {
-  //     allPosts.concat((await this.getPairedPostsOnTopic(category))["posts"]);
-  //   }
-  //   return { msg: `Successfully retrieved All posts`, posts: allPosts };
-  // }
 
   @Router.get("/friends")
   async getFriends(session: SessionDoc) {

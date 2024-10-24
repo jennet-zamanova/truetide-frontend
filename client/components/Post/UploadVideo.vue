@@ -29,10 +29,17 @@ async function uploadFile() {
 </script>
 <template>
   <div>
-    <input ref="fileInput" type="file" @change="handleFileUpload" class="button-secondary" />
-    <p>or give URL</p>
+    <input ref="fileInput" type="file" @change="handleFileUpload" />
+    <h3>or give URL</h3>
     <input v-model="content" @change="handleFileUpload" class="button-secondary" />
     <button type="button" @click="uploadFile" class="pure-button-primary pure-button">Next</button>
   </div>
 </template>
-<style scoped></style>
+<style scoped>
+div {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  align-items: center;
+}
+</style>

@@ -99,7 +99,7 @@ article {
 .posts {
   padding: 1em;
   display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
+  flex-direction: column;
+  /* flex-wrap: wrap; */
 }
 </style>

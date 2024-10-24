@@ -37,7 +37,7 @@ onBeforeMount(async () => {
   <main class="column">
     <h1>Your Posts</h1>
     <section class="posts" v-if="loaded && posts.length !== 0">
-      <article v-for="post in posts" :key="post._id">
+      <article v-for="post in posts" :key="post._id" :class="{ post: post._id !== editing }">
         <PostComponent v-if="editing !== post._id" :post="post" @refreshPosts="getPosts" @editPost="updateEditing" />
         <EditPostForm v-else :post="post" @refreshPosts="getPosts" @editPost="updateEditing" />
       </article>
@@ -54,5 +54,22 @@ onBeforeMount(async () => {
 .text {
   color: inherit;
   text-decoration: none;
+}
+.column {
+  align-items: center;
+}
+
+.posts {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  margin: 0 10% 5em 10%;
+  gap: 4em;
+  width: 70%;
+}
+
+.post {
+  padding: 0 10%;
+  width: 80%;
 }
 </style>

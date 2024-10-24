@@ -16,7 +16,7 @@ const emit = defineEmits(["editPost", "refreshPosts"]);
         <EditPostForm v-else :post="post" @refreshPosts="() => emit('refreshPosts')" @editPost="() => emit('editPost')" />
       </div>
 
-      <p v-if="index !== props.postPair.length - 1">vs</p>
+      <h3 v-if="index !== props.postPair.length - 1">VS</h3>
     </div>
   </div>
 </template>

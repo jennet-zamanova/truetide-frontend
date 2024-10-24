@@ -47,8 +47,8 @@ const emptyForm = () => {
     <div class="input-div">
       <div class="data-div">
         <div class="row-div" v-for="(dataPoint, index) of data" :key="index">
+          <button type="button" class="circle-button pure-button" @click="data.splice(index, 1)">—</button>
           <label class="data-label"> {{ dataPoint }}</label>
-          <button type="button" class="circle-button pure-button" @click="data.splice(index, 1)">-</button>
         </div>
       </div>
 
@@ -75,6 +75,7 @@ label {
 .data-label {
   max-width: 95%;
   overflow-wrap: break-word;
+  flex: 1;
 }
 
 textarea {
@@ -100,6 +101,11 @@ textarea {
 .circle-button {
   background-color: var(--base-bg);
 }
+
+.circle-button {
+  font-weight: bold;
+}
+
 .row-div {
   display: flex;
   flex-direction: row;

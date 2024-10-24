@@ -2,6 +2,7 @@
 import AddData from "@/components/Post/AddData.vue";
 import UploadVideo from "@/components/Post/UploadVideo.vue";
 
+import { useToastStore } from "@/stores/toast";
 import { ref } from "vue";
 import { fetchy } from "../../utils/fetchy";
 
@@ -13,7 +14,8 @@ const linksReceived = ref(false);
 const linksAdded = ref(false);
 const labelsAdded = ref(false);
 
-let fileId: string = "https://youtu.be/JiuBeLDSGR0?si=ofefnZH5WCbjJ9qp"; // will be used
+// let fileId: string = "https://youtu.be/JiuBeLDSGR0?si=ofefnZH5WCbjJ9qp"; // will be used
+let fileId: string = "";
 let links: string[] = [];
 let labels: string[] = [];
 const createPost = async () => {
@@ -69,11 +71,16 @@ const handleLabelsBackward = async (selectedLabels: string[]) => {
   linksAdded.value = false;
 };
 
+const preventSubmit = () => {
+  useToastStore().showToast({ message: `Please click on Next`, style: "error" });
+};
+
 const emptyForm = () => {
   fileUploaded.value = false;
   linksReceived.value = false;
   linksAdded.value = false;
-  fileId = "https://youtu.be/JiuBeLDSGR0?si=ofefnZH5WCbjJ9qp";
+  // fileId = "https://youtu.be/JiuBeLDSGR0?si=ofefnZH5WCbjJ9qp";
+  fileId = "";
   links = [];
   labels = [];
   labelsAdded.value = false;
@@ -81,7 +88,7 @@ const emptyForm = () => {
 </script>
 
 <template>
-  <form @submit.prevent="createPost()" v-if="!labelsAdded">
+  <form @submit.prevent="createPost()" v-if="!labelsAdded" @keydown.enter.prevent="preventSubmit">
     <!-- <h3 for="content" v-if="!fileUploaded">Post Contents:</h3> -->
     <div>
       <UploadVideo v-if="!fileUploaded" @uploadFile="handleFileUpload"></UploadVideo>

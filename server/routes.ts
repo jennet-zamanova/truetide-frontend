@@ -2,7 +2,7 @@ import { ObjectId } from "mongodb";
 
 import { Router, getExpressRouter } from "./framework/router";
 
-import { Authing, Citing, Friending, Labeling, Posting, Sessioning } from "./app";
+import { Authing, Citing, Labeling, Posting, Sessioning } from "./app";
 import { NotAllowedError } from "./concepts/errors";
 import { PostOptions } from "./concepts/posting";
 import { SessionDoc } from "./concepts/sessioning";
@@ -87,6 +87,7 @@ class Routes {
     return { msg: "Logged out!" };
   }
 
+  // can stil be used when token limit is reached
   @Router.get("/posts")
   @Router.validate(z.object({ author: z.string().optional() }))
   async getPosts(author?: string) {
@@ -125,11 +126,17 @@ class Routes {
     }
     const user = Sessioning.getUser(session);
     const created = await Posting.create(user, content, options);
+    console.log(created);
     const _id = created.post?._id;
     if (_id !== undefined) {
-      await Citing.addCitations(_id, links);
-      await Labeling.addLabelsForItem(_id, labels.split(", "));
+      if (links.length !== 0) {
+        await Citing.addCitations(_id, links);
+      }
+      if (labels !== "") {
+        await Labeling.addLabelsForItem(_id, labels.split(", "));
+      }
     }
+    console.log("no problems");
     return { msg: created.msg, post: await Responses.post(created.post) };
   }
 
@@ -269,53 +276,6 @@ class Routes {
     }
     console.log("paired was called");
     return getSomePairedPostsOnTopic(category);
-  }
-
-  @Router.get("/friends")
-  async getFriends(session: SessionDoc) {
-    const user = Sessioning.getUser(session);
-    return await Authing.idsToUsernames(await Friending.getFriends(user));
-  }
-
-  @Router.delete("/friends/:friend")
-  async removeFriend(session: SessionDoc, friend: string) {
-    const user = Sessioning.getUser(session);
-    const friendOid = (await Authing.getUserByUsername(friend))._id;
-    return await Friending.removeFriend(user, friendOid);
-  }
-
-  @Router.get("/friend/requests")
-  async getRequests(session: SessionDoc) {
-    const user = Sessioning.getUser(session);
-    return await Responses.friendRequests(await Friending.getRequests(user));
-  }
-
-  @Router.post("/friend/requests/:to")
-  async sendFriendRequest(session: SessionDoc, to: string) {
-    const user = Sessioning.getUser(session);
-    const toOid = (await Authing.getUserByUsername(to))._id;
-    return await Friending.sendRequest(user, toOid);
-  }
-
-  @Router.delete("/friend/requests/:to")
-  async removeFriendRequest(session: SessionDoc, to: string) {
-    const user = Sessioning.getUser(session);
-    const toOid = (await Authing.getUserByUsername(to))._id;
-    return await Friending.removeRequest(user, toOid);
-  }
-
-  @Router.put("/friend/accept/:from")
-  async acceptFriendRequest(session: SessionDoc, from: string) {
-    const user = Sessioning.getUser(session);
-    const fromOid = (await Authing.getUserByUsername(from))._id;
-    return await Friending.acceptRequest(fromOid, user);
-  }
-
-  @Router.put("/friend/reject/:from")
-  async rejectFriendRequest(session: SessionDoc, from: string) {
-    const user = Sessioning.getUser(session);
-    const fromOid = (await Authing.getUserByUsername(from))._id;
-    return await Friending.rejectRequest(fromOid, user);
   }
 }
 

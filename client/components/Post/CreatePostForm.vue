@@ -6,7 +6,6 @@ import { useToastStore } from "@/stores/toast";
 import { ref } from "vue";
 import { fetchy } from "../../utils/fetchy";
 
-const content = ref("");
 const emit = defineEmits(["refreshPosts"]);
 
 const fileUploaded = ref(false);
@@ -89,7 +88,6 @@ const emptyForm = () => {
 
 <template>
   <form @submit.prevent="createPost()" v-if="!labelsAdded" @keydown.enter.prevent="preventSubmit">
-    <!-- <h3 for="content" v-if="!fileUploaded">Post Contents:</h3> -->
     <div>
       <UploadVideo v-if="!fileUploaded" @uploadFile="handleFileUpload"></UploadVideo>
     </div>
@@ -110,7 +108,6 @@ const emptyForm = () => {
 <style scoped>
 form {
   height: 100%;
-  /* background-color: var(--base-bg); */
   border-radius: 1em;
   display: flex;
   flex-direction: column;

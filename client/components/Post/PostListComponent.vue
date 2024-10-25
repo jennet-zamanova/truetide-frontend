@@ -1,25 +1,21 @@
 <script setup lang="ts">
 import EditPostForm from "@/components/Post/EditPostForm.vue";
 import PostComponent from "@/components/Post/PostComponent.vue";
-import { useUserStore } from "@/stores/user";
 import { fetchy } from "@/utils/fetchy";
-import { storeToRefs } from "pinia";
 import { onBeforeMount, ref } from "vue";
 import SearchPostForm from "./SearchPostForm.vue";
 
-const { isLoggedIn } = storeToRefs(useUserStore());
-
-const TrueTideCategories = [
-  "Politics & Governance",
-  "Race & Identity",
-  "Free Speech & Censorship",
-  "Social Justice & Activism",
-  "Religion & Belief Systems",
-  "Health & Lifestyle",
-  "Economic Inequality & Class Issues",
-  "Language & Communication",
-  "Gender & Sexuality",
-];
+// const TrueTideCategories = [
+//   "Politics & Governance",
+//   "Race & Identity",
+//   "Free Speech & Censorship",
+//   "Social Justice & Activism",
+//   "Religion & Belief Systems",
+//   "Health & Lifestyle",
+//   "Economic Inequality & Class Issues",
+//   "Language & Communication",
+//   "Gender & Sexuality",
+// ];
 
 const loaded = ref(false);
 let posts = ref<Array<Record<string, string>>>([]);
@@ -53,10 +49,10 @@ onBeforeMount(async () => {
   <div class="row">
     <h2 v-if="!searchAuthor">Posts:</h2>
     <h2 v-else>Posts by {{ searchAuthor }}:</h2>
-    <select v-model="selected">
+    <!-- <select v-model="selected">
       <option disabled value="">Please select Category</option>
       <option v-for="(category, index) of TrueTideCategories" :key="index">{{ category }}</option>
-    </select>
+    </select> -->
     <SearchPostForm @getPostsByAuthor="getPosts" />
   </div>
   <section class="posts" v-if="loaded && posts.length !== 0">
@@ -85,7 +81,7 @@ p,
 }
 
 article {
-  background-color: var(--base-bg);
+  /* background-color: var(--base-bg); */
   border-radius: 1em;
   display: flex;
   flex-direction: column;
@@ -96,7 +92,9 @@ article {
 .posts {
   padding: 1em;
   display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 2em;
+  margin: 0 25%;
+  /* flex-wrap: wrap; */
 }
 </style>

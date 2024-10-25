@@ -69,7 +69,7 @@ onBeforeMount(async () => {
 }
 
 .post {
-  padding: 0 10%;
-  width: 80%;
+  padding: 0 20%;
+  width: 60%;
 }
 </style>

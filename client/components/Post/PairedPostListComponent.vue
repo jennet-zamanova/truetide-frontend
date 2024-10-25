@@ -1,15 +1,10 @@
 <script setup lang="ts">
 import PairedPostComponent from "@/components/Post/PairedPostComponent.vue";
-import { useUserStore } from "@/stores/user";
 import { fetchy } from "@/utils/fetchy";
-import { storeToRefs } from "pinia";
-import { onBeforeMount, ref } from "vue";
-
-const { isLoggedIn } = storeToRefs(useUserStore());
-
-const TrueTideAvailableCategories = ["Politics & Governance"];
+import { computed, onBeforeMount, ref } from "vue";
 
 const TrueTideCategories = [
+  "Politics & Governance",
   "Race & Identity",
   "Free Speech & Censorship",
   "Social Justice & Activism",
@@ -20,11 +15,17 @@ const TrueTideCategories = [
   "Gender & Sexuality",
 ];
 
+const TrueTideAvailableCategories = ref(["Politics & Governance"]);
+// const TrueTideUnavailableCategories = ref(TrueTideCategories.filter((category) => !TrueTideAvailableCategories.value.includes(category)));
+
+const TrueTideUnavailableCategories = computed(() => {
+  return TrueTideCategories.filter((category) => !TrueTideAvailableCategories.value.includes(category));
+});
+
 const loaded = ref(false);
 let posts = ref<Array<Record<string, string>>>([]);
 let editing = ref("");
 let searchCategory = ref("all");
-let selected = ref("");
 
 async function getPairedPosts() {
   let postResults;
@@ -37,12 +38,21 @@ async function getPairedPosts() {
   posts.value = postResults.posts;
 }
 
+async function getAvailableCategories() {
+  try {
+    return await fetchy(`api/categories`, "GET");
+  } catch (_) {
+    return [];
+  }
+}
+
 function updateEditing(id: string) {
   editing.value = id;
 }
 
 onBeforeMount(async () => {
   await getPairedPosts();
+  TrueTideAvailableCategories.value = await getAvailableCategories();
   loaded.value = true;
 });
 </script>
@@ -52,19 +62,19 @@ onBeforeMount(async () => {
     <select v-model="searchCategory">
       <option value="all">All</option>
       <option v-for="(category, index) of TrueTideAvailableCategories" :key="index">{{ category }}</option>
-      <option v-for="(category, index) of TrueTideCategories" :key="index" disabled>{{ category }}</option>
+      <option v-for="(category, index) of TrueTideUnavailableCategories" :key="index" disabled>{{ category }}</option>
     </select>
     <button @click="getPairedPosts" class="pure-button-primary pure-button">Show Posts</button>
   </div>
   <section class="posts" v-if="loaded && posts.length !== 0">
     <article v-for="(post, index) of posts" :key="index" :style="[index % 2 == 0 ? { 'background-color': 'var(--background)' } : { 'background-color': 'var(--base-bg)' }]">
       <PairedPostComponent :postPair="post" @refreshPosts="getPairedPosts" @editPost="updateEditing"></PairedPostComponent>
-      <!--
-      <PostComponent v-if="editing !== post._id" :post="post" @refreshPosts="getPosts" @editPost="updateEditing" />
-      <EditPostForm v-else :post="post" @refreshPosts="getPosts" @editPost="updateEditing" /> -->
     </article>
   </section>
-  <p v-else-if="loaded">No posts found</p>
+  <p v-else-if="loaded">
+    No posts found OR we reached the token limit😔. <RouterLink :to="{ name: 'Upload' }">Upload your own video</RouterLink> or
+    <RouterLink :to="{ name: 'SoloPosts' }">look at unpaired posts</RouterLink>
+  </p>
   <p v-else>Loading...</p>
 </template>
 

@@ -212,10 +212,9 @@ export default class LabelingConcept {
    */
   private async findCategoryGemini(labels: string[]): Promise<string> {
     const model = getModelForCategory(this.allowedCategories);
-    const result = await model.generateContent(`
-      Here are the labels: \`\`\`${labels}\`\`\``);
-    console.log("STATUS CODE:", result.response.promptFeedback);
     try {
+      const result = await model.generateContent(`
+        Here are the labels: \`\`\`${labels}\`\`\``);
       const category = JSON.parse(result.response.text());
       if (category in this.allowedCategories) {
         return category;
@@ -226,11 +225,29 @@ export default class LabelingConcept {
       if (e instanceof GoogleGenerativeAIFetchError) {
         if (e.status === 429) {
           console.log("token limit reached!");
-          return "";
+          return "all";
         }
       }
-      throw e;
+      console.log("error: ", e);
+      return "all";
     }
+
+    // try {
+    //   const category = JSON.parse(result.response.text());
+    //   if (category in this.allowedCategories) {
+    //     return category;
+    //   } else {
+    //     return "all";
+    //   }
+    // } catch (e) {
+    //   if (e instanceof GoogleGenerativeAIFetchError) {
+    //     if (e.status === 429) {
+    //       console.log("token limit reached!");
+    //       return "";
+    //     }
+    //   }
+    //   throw e;
+    // }
   }
 
   /**

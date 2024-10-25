@@ -1,11 +1,7 @@
 <script setup lang="ts">
 import PairedPostComponent from "@/components/Post/PairedPostComponent.vue";
-import { useUserStore } from "@/stores/user";
 import { fetchy } from "@/utils/fetchy";
-import { storeToRefs } from "pinia";
 import { onBeforeMount, ref } from "vue";
-
-const { isLoggedIn } = storeToRefs(useUserStore());
 
 const TrueTideAvailableCategories = ["Politics & Governance"];
 
@@ -24,7 +20,6 @@ const loaded = ref(false);
 let posts = ref<Array<Record<string, string>>>([]);
 let editing = ref("");
 let searchCategory = ref("all");
-let selected = ref("");
 
 async function getPairedPosts() {
   let postResults;
@@ -59,9 +54,6 @@ onBeforeMount(async () => {
   <section class="posts" v-if="loaded && posts.length !== 0">
     <article v-for="(post, index) of posts" :key="index" :style="[index % 2 == 0 ? { 'background-color': 'var(--background)' } : { 'background-color': 'var(--base-bg)' }]">
       <PairedPostComponent :postPair="post" @refreshPosts="getPairedPosts" @editPost="updateEditing"></PairedPostComponent>
-      <!--
-      <PostComponent v-if="editing !== post._id" :post="post" @refreshPosts="getPosts" @editPost="updateEditing" />
-      <EditPostForm v-else :post="post" @refreshPosts="getPosts" @editPost="updateEditing" /> -->
     </article>
   </section>
   <p v-else-if="loaded">No posts found</p>

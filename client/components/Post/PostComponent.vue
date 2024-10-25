@@ -14,7 +14,6 @@ const { currentUsername } = storeToRefs(useUserStore());
 const postURL = computed(() => {
   // const root = "https://youtu.be/";
   // return props.post.content.slice(0, root.length) + "embed/" + props.post.content.slice(root.length)
-  console.log("props ", props.post);
   if (props.post.content.includes("embed")) {
     return props.post.content;
   }

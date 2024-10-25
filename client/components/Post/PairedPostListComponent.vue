@@ -1,11 +1,10 @@
 <script setup lang="ts">
 import PairedPostComponent from "@/components/Post/PairedPostComponent.vue";
 import { fetchy } from "@/utils/fetchy";
-import { onBeforeMount, ref } from "vue";
-
-const TrueTideAvailableCategories = ["Politics & Governance"];
+import { computed, onBeforeMount, ref } from "vue";
 
 const TrueTideCategories = [
+  "Politics & Governance",
   "Race & Identity",
   "Free Speech & Censorship",
   "Social Justice & Activism",
@@ -15,6 +14,13 @@ const TrueTideCategories = [
   "Language & Communication",
   "Gender & Sexuality",
 ];
+
+const TrueTideAvailableCategories = ref(["Politics & Governance"]);
+// const TrueTideUnavailableCategories = ref(TrueTideCategories.filter((category) => !TrueTideAvailableCategories.value.includes(category)));
+
+const TrueTideUnavailableCategories = computed(() => {
+  return TrueTideCategories.filter((category) => !TrueTideAvailableCategories.value.includes(category));
+});
 
 const loaded = ref(false);
 let posts = ref<Array<Record<string, string>>>([]);
@@ -32,12 +38,21 @@ async function getPairedPosts() {
   posts.value = postResults.posts;
 }
 
+async function getAvailableCategories() {
+  try {
+    return await fetchy(`api/post/categories`, "GET");
+  } catch (_) {
+    return [];
+  }
+}
+
 function updateEditing(id: string) {
   editing.value = id;
 }
 
 onBeforeMount(async () => {
   await getPairedPosts();
+  TrueTideAvailableCategories.value = await getAvailableCategories();
   loaded.value = true;
 });
 </script>
@@ -47,7 +62,7 @@ onBeforeMount(async () => {
     <select v-model="searchCategory">
       <option value="all">All</option>
       <option v-for="(category, index) of TrueTideAvailableCategories" :key="index">{{ category }}</option>
-      <option v-for="(category, index) of TrueTideCategories" :key="index" disabled>{{ category }}</option>
+      <option v-for="(category, index) of TrueTideUnavailableCategories" :key="index" disabled>{{ category }}</option>
     </select>
     <button @click="getPairedPosts" class="pure-button-primary pure-button">Show Posts</button>
   </div>

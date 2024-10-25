@@ -1,3 +1,4 @@
+import { GoogleGenerativeAIFetchError } from "@google/generative-ai";
 import assert from "assert";
 import { ObjectId } from "mongodb";
 import DocCollection, { BaseDoc } from "../framework/doc";
@@ -72,8 +73,9 @@ export default class LabelingConcept {
    * @param labels valid filter for labels to remove `item` from
    */
   async removeItemFromLabel(item: ObjectId, labels: { label: { $in: string[] } } | object = {}) {
-    await this.labels.updateMany(labels, { $pull: { items: item } });
-    const labelDocs = await this.labels.readMany({ labels: { $size: 0 } });
+    const update = await this.labels.updateMany(labels, { $pull: { items: item } });
+    const labelDocs = await this.labels.readMany({ items: { $size: 0 } });
+    console.log("labeldocs with no items", labelDocs, update);
     for (const label of labelDocs) {
       await this.categories.updateMany({}, { $pull: { labels: label._id } });
       await this.categories.deleteMany({ labels: { $size: 0 } });
@@ -89,21 +91,31 @@ export default class LabelingConcept {
    */
   async getOpposingItems(category: string): Promise<ObjectId[][]> {
     const oppositeItems: ObjectId[][] = [];
+
     const closestCategory = await this.getClosestExistingCategory(category);
     assert(this.allowedCategories.includes(closestCategory), `expected one of ${this.allowedCategories} but got category ${category}`);
     // All labels in the category
     const labels = await this.getLabelsInCategory(closestCategory);
-    // Match opposites
-    const oppositeLabels = await this.getOppositeLabelPairs(labels, category);
-    // Match items with opposite labels
-    for (const [l1, l2] of oppositeLabels) {
-      const items_l1 = await this.getItemsWithLabel(l1);
-      const items_l2 = await this.getItemsWithLabel(l2);
-      // TODO: somehow get unique
-      for (let i = 0; i < Math.min(items_l1.length, items_l2.length); i++) {
-        oppositeItems.push([items_l1[i], items_l2[i]]);
+    // try multiple times just in case
+    for (let tryNumber = 0; tryNumber < 3; tryNumber++) {
+      console.log("try number: ", tryNumber);
+      if (oppositeItems.length === 0) {
+        // Match opposites
+        const oppositeLabels = await this.getOppositeLabelPairs(labels, category);
+        // Match items with opposite labels
+        for (const [l1, l2] of oppositeLabels) {
+          const items_l1 = await this.getItemsWithLabel(l1);
+          const items_l2 = await this.getItemsWithLabel(l2);
+          // TODO: somehow get unique
+          for (let i = 0; i < Math.min(items_l1.length, items_l2.length); i++) {
+            if (items_l1[i].toString() !== items_l2[i].toString()) {
+              oppositeItems.push([items_l1[i], items_l2[i]]);
+            }
+          }
+        }
       }
     }
+
     return oppositeItems;
   }
 
@@ -202,11 +214,22 @@ export default class LabelingConcept {
     const model = getModelForCategory(this.allowedCategories);
     const result = await model.generateContent(`
       Here are the labels: \`\`\`${labels}\`\`\``);
-    const category = JSON.parse(result.response.text());
-    if (category in this.allowedCategories) {
-      return category;
-    } else {
-      return "all";
+    console.log("STATUS CODE:", result.response.promptFeedback);
+    try {
+      const category = JSON.parse(result.response.text());
+      if (category in this.allowedCategories) {
+        return category;
+      } else {
+        return "all";
+      }
+    } catch (e) {
+      if (e instanceof GoogleGenerativeAIFetchError) {
+        if (e.status === 429) {
+          console.log("token limit reached!");
+          return "";
+        }
+      }
+      throw e;
     }
   }
 
@@ -226,12 +249,26 @@ export default class LabelingConcept {
   private async getOppositeLabelPairs(labels: ObjectId[], category: string): Promise<string[][]> {
     const labelVaues = await this.getLabelsValues(labels);
     const model = getModelForLabelPairs();
-    const result = await model.generateContent(`
+    const prompt = `
       Given a list of labels enclosed in \`\`\` in category ${category}, 
       pair the labels l_1 and l_2 together 
       iff l_1 and l_2 have opposing meaning in category ${category}. 
-       Decide on the pairing and return an array of tuples of labels. Here are the labels \`\`\`${labelVaues}\`\`\``);
-    return JSON.parse(result.response.text());
+       Decide on the pairing and return an array of tuples of labels. Here are the labels \`\`\`${labelVaues}\`\`\``;
+    console.log("prompt for google: ", prompt);
+    try {
+      const result = await model.generateContent(prompt);
+      console.log("result from google: ", result.response.text());
+      return JSON.parse(result.response.text());
+    } catch (e) {
+      console.log("the error: ", e);
+      return [[]];
+    }
+
+    // for (const cand of result.response.candidates ?? []) {
+    //   for (const rating of cand.safetyRatings ?? []) {
+    //     console.log("ratings: ", rating);
+    //   }
+    // }
   }
 
   // Future work

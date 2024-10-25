@@ -10,6 +10,22 @@ import Responses from "./responses";
 
 import { z } from "zod";
 
+type PairedPost = {
+  labels: string[];
+  citations: string[];
+  author?: string | undefined;
+  content?: string | undefined;
+  options?: PostOptions;
+  _id?: ObjectId | undefined;
+  dateCreated?: Date | undefined;
+  dateUpdated?: Date | undefined;
+};
+
+type PairedPostsResponse = {
+  msg: string;
+  posts: PairedPost[][];
+};
+
 /**
  * Web server routes for the app. Implements synchronizations between concepts.
  */
@@ -81,7 +97,12 @@ class Routes {
     } else {
       posts = await Posting.getPosts();
     }
-    return Responses.posts(posts);
+    const response_posts = await Responses.posts(posts);
+    return await Promise.all(
+      response_posts.map(async (responsePost) => {
+        return { ...responsePost, citations: (await Citing.getCitations(responsePost._id)).citations, labels: await Labeling.getLabelsForItem(responsePost._id) };
+      }),
+    );
   }
 
   /**
@@ -96,7 +117,7 @@ class Routes {
   @Router.post("/posts")
   async createPost(session: SessionDoc, content: string, citations: string, labels: string, options?: PostOptions) {
     const links = citations.split(", ");
-    if (links.map((link) => URL.canParse(link)).filter((isLink) => !isLink).length !== 0) {
+    if (links.map((link) => URL.canParse(link)).filter((isLink) => !isLink).length !== 0 && citations.length !== 0) {
       throw new NotAllowedError(`expected comma-separated VALID links but got ${citations}`);
     }
     if (!URL.canParse(content)) {
@@ -215,27 +236,39 @@ class Routes {
     return await Labeling.getItemsWithLabel(label);
   }
 
+  @Router.get("/posts/:postId/labels")
+  async getLabels(postId: string) {
+    return await Labeling.getLabelsForItem(new ObjectId(postId));
+  }
+
   // get opposing posts on a topic
   @Router.get("/posts/:category")
-  async getPairedPostsOnTopic(category: string) {
-    if (!(await Labeling.getAllCategories()).includes(category)) {
-      return { msg: `the are no posts in category ${category} yet` };
+  async getPairedPostsOnTopic(category: string): Promise<PairedPostsResponse> {
+    const getAllPairedPosts = async function (): Promise<PairedPostsResponse> {
+      let allPosts: PairedPost[][] = [];
+      const allCategories = await Labeling.getAllCategories();
+      for (const givenCategory of allCategories) {
+        const somePosts = await getSomePairedPostsOnTopic(givenCategory);
+        allPosts = allPosts.concat(somePosts["posts"]);
+      }
+      return { msg: `Successfully retrieved All posts`, posts: allPosts };
+    };
+
+    const getSomePairedPostsOnTopic = async function (category: string): Promise<PairedPostsResponse> {
+      if (!(await Labeling.getAllCategories()).includes(category)) {
+        return { msg: `the are no posts in category ${category} yet`, posts: [] };
+      }
+      const postPairs = await Labeling.getOpposingItems(category);
+      console.log("here are the pairs", postPairs);
+      const allPosts = await Responses.pairedPosts(postPairs);
+      console.log("returned posts: ", allPosts);
+      return { msg: `Successfully retrieved posts in category ${category}`, posts: allPosts };
+    };
+    if (category.toLowerCase() === "all") {
+      return getAllPairedPosts();
     }
-    const allPosts = [];
-    const postPairs = await Labeling.getOpposingItems(category);
-    console.log("here are the pairs", postPairs);
-    for (const postPair of postPairs) {
-      const contents = await Posting.getPostsSubset(postPair);
-      console.log("here are the contents: ", contents);
-      const labels = await Promise.all(postPair.map((post) => Labeling.getLabelsForItem(post)));
-      console.log("here are the labels: ", labels);
-      const post_info = contents.map((content, index) => {
-        return { content: content, labels: labels[index] };
-      });
-      allPosts.push(post_info);
-      console.log("here are the posts: ", allPosts);
-    }
-    return allPosts;
+    console.log("paired was called");
+    return getSomePairedPostsOnTopic(category);
   }
 
   @Router.get("/friends")

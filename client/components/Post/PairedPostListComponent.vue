@@ -1,16 +1,15 @@
 <script setup lang="ts">
-import EditPostForm from "@/components/Post/EditPostForm.vue";
-import PostComponent from "@/components/Post/PostComponent.vue";
+import PairedPostComponent from "@/components/Post/PairedPostComponent.vue";
 import { useUserStore } from "@/stores/user";
 import { fetchy } from "@/utils/fetchy";
 import { storeToRefs } from "pinia";
 import { onBeforeMount, ref } from "vue";
-import SearchPostForm from "./SearchPostForm.vue";
 
 const { isLoggedIn } = storeToRefs(useUserStore());
 
+const TrueTideAvailableCategories = ["Politics & Governance"];
+
 const TrueTideCategories = [
-  "Politics & Governance",
   "Race & Identity",
   "Free Speech & Censorship",
   "Social Justice & Activism",
@@ -24,19 +23,18 @@ const TrueTideCategories = [
 const loaded = ref(false);
 let posts = ref<Array<Record<string, string>>>([]);
 let editing = ref("");
-let searchAuthor = ref("");
+let searchCategory = ref("all");
 let selected = ref("");
 
-async function getPosts(author?: string) {
-  let query: Record<string, string> = author !== undefined ? { author } : {};
+async function getPairedPosts() {
   let postResults;
   try {
-    postResults = await fetchy("/api/posts", "GET", { query });
+    postResults = await fetchy(`/api/posts/${searchCategory.value}`, "GET");
   } catch (_) {
     return;
   }
-  searchAuthor.value = author ? author : "";
-  posts.value = postResults;
+  console.log("results:::", postResults);
+  posts.value = postResults.posts;
 }
 
 function updateEditing(id: string) {
@@ -44,25 +42,26 @@ function updateEditing(id: string) {
 }
 
 onBeforeMount(async () => {
-  await getPosts();
+  await getPairedPosts();
   loaded.value = true;
 });
 </script>
 
 <template>
-  <div class="row">
-    <h2 v-if="!searchAuthor">Posts:</h2>
-    <h2 v-else>Posts by {{ searchAuthor }}:</h2>
-    <select v-model="selected">
-      <option disabled value="">Please select Category</option>
-      <option v-for="(category, index) of TrueTideCategories" :key="index">{{ category }}</option>
+  <div class="button-row row">
+    <select v-model="searchCategory">
+      <option value="all">All</option>
+      <option v-for="(category, index) of TrueTideAvailableCategories" :key="index">{{ category }}</option>
+      <option v-for="(category, index) of TrueTideCategories" :key="index" disabled>{{ category }}</option>
     </select>
-    <SearchPostForm @getPostsByAuthor="getPosts" />
+    <button @click="getPairedPosts" class="pure-button-primary pure-button">Show Posts</button>
   </div>
   <section class="posts" v-if="loaded && posts.length !== 0">
-    <article v-for="post in posts" :key="post._id">
+    <article v-for="(post, index) of posts" :key="index" :style="[index % 2 == 0 ? { 'background-color': 'var(--background)' } : { 'background-color': 'var(--base-bg)' }]">
+      <PairedPostComponent :postPair="post" @refreshPosts="getPairedPosts" @editPost="updateEditing"></PairedPostComponent>
+      <!--
       <PostComponent v-if="editing !== post._id" :post="post" @refreshPosts="getPosts" @editPost="updateEditing" />
-      <EditPostForm v-else :post="post" @refreshPosts="getPosts" @editPost="updateEditing" />
+      <EditPostForm v-else :post="post" @refreshPosts="getPosts" @editPost="updateEditing" /> -->
     </article>
   </section>
   <p v-else-if="loaded">No posts found</p>
@@ -70,21 +69,25 @@ onBeforeMount(async () => {
 </template>
 
 <style scoped>
+.button-row {
+  margin: 0 10%;
+}
 section {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: 1em;
 }
 
 section,
-p,
-.row {
+p {
   margin: 0 auto;
   max-width: 75em;
+  display: flex;
   justify-content: space-between;
 }
 
 article {
+  width: 100%;
   background-color: var(--base-bg);
   border-radius: 1em;
   display: flex;
@@ -96,7 +99,7 @@ article {
 .posts {
   padding: 1em;
   display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
+  flex-direction: column;
+  /* flex-wrap: wrap; */
 }
 </style>

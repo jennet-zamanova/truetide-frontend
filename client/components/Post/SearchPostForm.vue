@@ -22,4 +22,7 @@ form {
   padding: 1em;
   align-items: center;
 }
+legend {
+  border-bottom: none;
+}
 </style>

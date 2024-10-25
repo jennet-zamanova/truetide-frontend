@@ -1,5 +1,24 @@
-import { GenerativeModel, GoogleGenerativeAI, SchemaType } from "@google/generative-ai";
+import { GenerativeModel, GoogleGenerativeAI, HarmBlockThreshold, HarmCategory, SchemaType } from "@google/generative-ai";
 import { FileMetadataResponse, FileState, GoogleAIFileManager } from "@google/generative-ai/server";
+
+const safetySettings = [
+  {
+    category: HarmCategory.HARM_CATEGORY_HARASSMENT,
+    threshold: HarmBlockThreshold.BLOCK_NONE,
+  },
+  {
+    category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
+    threshold: HarmBlockThreshold.BLOCK_NONE,
+  },
+  {
+    category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+    threshold: HarmBlockThreshold.BLOCK_NONE,
+  },
+  {
+    category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
+    threshold: HarmBlockThreshold.BLOCK_NONE,
+  },
+];
 
 // for now ask GEMINI
 export function getModelForCategory(allowedCategories: string[]): GenerativeModel {
@@ -16,10 +35,11 @@ export function getModelForCategory(allowedCategories: string[]): GenerativeMode
       temperature: 1,
       topP: 0.95,
       topK: 64,
-      maxOutputTokens: 8192,
+      maxOutputTokens: 1,
       responseMimeType: "application/json",
       responseSchema: schema,
     },
+    safetySettings,
     systemInstruction: `Given a set of labels, decide which one of these categories the labels fit the best. 
     The categories: [${allowedCategories}]`,
   });
@@ -49,6 +69,7 @@ export function getModelForLabelPairs(): GenerativeModel {
       responseMimeType: "application/json",
       responseSchema: schema,
     },
+    safetySettings,
   });
 
   return model;

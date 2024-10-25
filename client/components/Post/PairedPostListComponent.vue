@@ -40,7 +40,7 @@ async function getPairedPosts() {
 
 async function getAvailableCategories() {
   try {
-    return await fetchy(`api/post/categories`, "GET");
+    return await fetchy(`api/categories`, "GET");
   } catch (_) {
     return [];
   }
@@ -71,7 +71,10 @@ onBeforeMount(async () => {
       <PairedPostComponent :postPair="post" @refreshPosts="getPairedPosts" @editPost="updateEditing"></PairedPostComponent>
     </article>
   </section>
-  <p v-else-if="loaded">No posts found</p>
+  <p v-else-if="loaded">
+    No posts found OR we reached the token limit😔. <RouterLink :to="{ name: 'Upload' }">Upload your own video</RouterLink> or
+    <RouterLink :to="{ name: 'SoloPosts' }">look at unpaired posts</RouterLink>
+  </p>
   <p v-else>Loading...</p>
 </template>
 

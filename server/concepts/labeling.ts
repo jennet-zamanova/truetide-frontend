@@ -231,23 +231,6 @@ export default class LabelingConcept {
       console.log("error: ", e);
       return "all";
     }
-
-    // try {
-    //   const category = JSON.parse(result.response.text());
-    //   if (category in this.allowedCategories) {
-    //     return category;
-    //   } else {
-    //     return "all";
-    //   }
-    // } catch (e) {
-    //   if (e instanceof GoogleGenerativeAIFetchError) {
-    //     if (e.status === 429) {
-    //       console.log("token limit reached!");
-    //       return "";
-    //     }
-    //   }
-    //   throw e;
-    // }
   }
 
   /**
@@ -277,15 +260,15 @@ export default class LabelingConcept {
       console.log("result from google: ", result.response.text());
       return JSON.parse(result.response.text());
     } catch (e) {
+      if (e instanceof GoogleGenerativeAIFetchError) {
+        if (e.status === 429) {
+          console.log("token limit reached!");
+          return [[]];
+        }
+      }
       console.log("the error: ", e);
       return [[]];
     }
-
-    // for (const cand of result.response.candidates ?? []) {
-    //   for (const rating of cand.safetyRatings ?? []) {
-    //     console.log("ratings: ", rating);
-    //   }
-    // }
   }
 
   // Future work

@@ -34,7 +34,8 @@ const cancel = () => {
 };
 
 const emptyForm = () => {
-  data.value = "";
+  data.value = [];
+  inputData.value = "";
 };
 </script>
 
@@ -47,8 +48,8 @@ const emptyForm = () => {
     <div class="input-div">
       <div class="data-div">
         <div class="row-div" v-for="(dataPoint, index) of data" :key="index">
-          <button type="button" class="circle-button pure-button" @click="data.splice(index, 1)">—</button>
-          <label class="data-label"> {{ dataPoint }}</label>
+          <button v-if="dataPoint !== ''" type="button" class="circle-button pure-button" @click="data.splice(index, 1)">—</button>
+          <label v-if="dataPoint !== ''" class="data-label"> {{ dataPoint }}</label>
         </div>
       </div>
 

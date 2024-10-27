@@ -103,14 +103,31 @@ export default class LabelingConcept {
         // Match opposites
         const oppositeLabels = await this.getOppositeLabelPairs(labels, category);
         // Match items with opposite labels
+        if (oppositeLabels[0].length === 0) {
+          return [[]];
+        }
         for (const [l1, l2] of oppositeLabels) {
-          const items_l1 = await this.getItemsWithLabel(l1);
-          const items_l2 = await this.getItemsWithLabel(l2);
-          // TODO: somehow get unique
-          for (let i = 0; i < Math.min(items_l1.length, items_l2.length); i++) {
-            if (items_l1[i].toString() !== items_l2[i].toString()) {
-              oppositeItems.push([items_l1[i], items_l2[i]]);
+          try {
+            const items_l1 = await this.getItemsWithLabel(l1);
+            const items_l2 = await this.getItemsWithLabel(l2);
+
+            for (let i = 0; i < Math.min(items_l1.length, items_l2.length); i++) {
+              if (items_l1[i].toString() !== items_l2[i].toString()) {
+                // TODO: get unique?
+                const isUniquePair = oppositeItems.filter(
+                  ([i1, i2]) =>
+                    (i1.toString() === items_l1[i].toString() && i2.toString() === items_l2[i].toString()) || (i1.toString() === items_l2[i].toString() && i2.toString() === items_l1[i].toString()),
+                );
+                // console.log("new items: ", items_l1[i].toString(), items_l2[i].toString());
+                // console.log("oppposite items so far: ", oppositeItems);
+                // console.log("non uniques: ", isUniquePair);
+                if (isUniquePair.length === 0) {
+                  oppositeItems.push([items_l1[i], items_l2[i]]);
+                }
+              }
             }
+          } catch (e) {
+            console.log("produced wrong labels again", e);
           }
         }
       }

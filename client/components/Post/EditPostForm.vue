@@ -127,6 +127,7 @@ form {
   display: flex;
   border-radius: 1em;
   border: 4px solid var(--secondary-highlight);
+  background-color: white;
 }
 
 .full-form {

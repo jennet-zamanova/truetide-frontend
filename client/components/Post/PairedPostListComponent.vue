@@ -28,6 +28,7 @@ let editing = ref("");
 let searchCategory = ref("all");
 
 async function getPairedPosts() {
+  loaded.value = false;
   let postResults;
   try {
     postResults = await fetchy(`/api/posts/${searchCategory.value}`, "GET");
@@ -36,6 +37,7 @@ async function getPairedPosts() {
   }
   console.log("results:::", postResults);
   posts.value = postResults.posts;
+  loaded.value = true;
 }
 
 async function getAvailableCategories() {
@@ -52,6 +54,7 @@ function updateEditing(id: string) {
 
 onBeforeMount(async () => {
   await getPairedPosts();
+  loaded.value = false;
   TrueTideAvailableCategories.value = await getAvailableCategories();
   loaded.value = true;
 });
@@ -67,8 +70,8 @@ onBeforeMount(async () => {
     <button @click="getPairedPosts" class="pure-button-primary pure-button">Show Posts</button>
   </div>
   <section class="posts" v-if="loaded && posts.length !== 0">
-    <article v-for="(post, index) of posts" :key="index" :style="[index % 2 == 0 ? { 'background-color': 'var(--background)' } : { 'background-color': 'var(--base-bg)' }]">
-      <PairedPostComponent :postPair="post" @refreshPosts="getPairedPosts" @editPost="updateEditing"></PairedPostComponent>
+    <article v-for="(post, index) of posts" :key="index" :style="[index % 2 == 0 ? { 'background-color': 'var(--background-pair1)' } : { 'background-color': 'var(--background-pair2)' }]">
+      <PairedPostComponent :postPair="post" :editing="editing" @refreshPosts="getPairedPosts" @editPost="updateEditing"></PairedPostComponent>
     </article>
   </section>
   <p v-else-if="loaded">
@@ -98,7 +101,7 @@ p {
 
 article {
   width: 100%;
-  background-color: var(--base-bg);
+  /* background-color: var(--base-bg); */
   border-radius: 1em;
   display: flex;
   flex-direction: column;

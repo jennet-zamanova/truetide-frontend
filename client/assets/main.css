@@ -3,11 +3,14 @@
 :root {
   --red: rgb(208, 67, 12);
   /* --base-bg: #f1f3f5; */
-  --base-bg: #f9f0e2;
+  --base-bg: #f4e6d1;
   --primary-blue: #2196f3;
   --secondary-blue: #0078e7;
   --primary-highlight: #ff6f31;
   --background: #f9f9f0;
+  --background-pair1: #e0d1a5;
+  --background-pair3: #c7bb98;
+  --background-pair2: #f1d992d7;
   --secondary-highlight: #4caf50;
   /* --secondary-background: #614f1a; */
   --secondary-backgorund: #602f1a;
